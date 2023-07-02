@@ -8,8 +8,9 @@ const {
     VoiceConnectionStatus,
     getVoiceConnection
 } = require('@discordjs/voice');
-const ytdl = require('ytdl-core');
+// const ytdl = require('ytdl-core');
 const ytpl = require('ytpl');
+import playdl from "play-dl";
 
 const queue = new Map();
 const playlistVoiceChannelId = process.env.playlistplayerchannel; // Replace with your desired voice channel ID
@@ -231,29 +232,12 @@ async function play(guild : any, song : any) {
         return;
     };
 
-    const stream = ytdl(song.url, {
-        filter: 'audioonly',
-        quality: 'highestaudio'
-    });
-    const resource = createAudioResource(stream, {inlineVolume: true});
+    const {stream} = await playdl.stream(song.url, {discordPlayerCompatibility: true});
 
+    const resource = createAudioResource(stream);
     await serverQueue
         .audioPlayer
         .play(resource);
-
-    // serverQueue     .audioPlayer     .on(AudioPlayerStatus.Idle, async() => {
-    //     if (!isPlaying || isSkipping) {             return;         };
-    // isPlaying = false; // Set the flag to false to indicate the song is no longer
-    // being played         isSkipping = true; // Reset the skip flag
-    // console.log("idle event triggered");         if (serverQueue.loop) {
-    //    serverQueue                 .songs
-    // .push(serverQueue.songs.shift()); // Move the current song to the end of the
-    // queue         } else {             serverQueue                 .songs
-    //         .shift(); // Remove the current song from the queue         };
-    //  await play(guild, serverQueue.songs[0]);         setTimeout(() => {
-    //    isPlaying = true; // Set the flag back to true after starting the next
-    // song             isSkipping = false;         }, 5000);     }); Check if the
-    // event listener is already attached
     if (!serverQueue.audioPlayer.listeners('stateChange').includes(onStateChange)) {
         // Attach the event listener for AudioPlayerStatus.Idle
         serverQueue
