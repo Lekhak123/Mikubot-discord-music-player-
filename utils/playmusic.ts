@@ -15,8 +15,8 @@ const queue = new Map();
 const playlistVoiceChannelId = process.env.playlistplayerchannel; // Replace with your desired voice channel ID
 let isPlaying = true; // Flag to track if the song is already being played
 let isSkipping = false; // Flag to track if a skip operation is in progress
-
-const playyoutubeplaylist = async(message) => {
+let disconnected = false;
+const playyoutubeplaylist = async(message,client) => {
     const serverQueue = queue.get(message.guild.id);
 
     if (message.content.startsWith('!playplaylist')) {
@@ -89,12 +89,16 @@ const playyoutubeplaylist = async(message) => {
             try {
 
                 const connection = await joinVoiceChannel({channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator});
-
+                connection.on(VoiceConnectionStatus.Disconnected, (oldState, newState) => {
+                        disconnected=true;
+                        console.log('Bot was kicked from the voice channel');
+                });
                 queueConstructor.connection = connection;
                 await connection.subscribe(queueConstructor.audioPlayer);
                 connection.on(VoiceConnectionStatus.Ready, () => {
                     console.log('The connection has entered the Ready state - ready to play audio!');
                     play(message.guild, queueConstructor.songs[0]);
+                    disconnected=false;
                 });
             } catch (err) {
                 console.error('Error joining voice channel:', err);
@@ -121,7 +125,14 @@ const playyoutubeplaylist = async(message) => {
                 .send('Playlist added to the queue.');
         }
     }
+    
 
+    if(disconnected){
+        return message
+                .channel
+                .send(`${client.user.tag} is currently not in the voice channel.`);
+    };
+    
     if (message.content.startsWith('!skip')) {
         if (!message.member.voice.channel) {
             return message
@@ -133,6 +144,9 @@ const playyoutubeplaylist = async(message) => {
                 .channel
                 .send('There is no song that I could skip.');
         };
+
+
+
         if (!isPlaying || isSkipping) {
             return message
                 .channel
@@ -164,6 +178,8 @@ const playyoutubeplaylist = async(message) => {
                 .channel
                 .send('There is no song that I could play.');
         };
+        
+     
         if (!serverQueue.playing) {
             serverQueue.playing = true;
             serverQueue
@@ -189,6 +205,8 @@ const playyoutubeplaylist = async(message) => {
                 .channel
                 .send('There is no song to pause.');
         };
+        
+        
         if (serverQueue.playing) {
             serverQueue.playing = false;
             serverQueue
@@ -214,12 +232,52 @@ const playyoutubeplaylist = async(message) => {
                 .channel
                 .send('There is no song to enable or disable loop.');
         };
+
+
+
         serverQueue.loop = !serverQueue.loop;
         return message
             .channel
             .send(`Loop is now ${serverQueue.loop
                 ? 'enabled'
                 : 'disabled'}.`);
+    };
+
+    if (message.content.startsWith('!stop')) {
+        if (!message.member.voice.channel) {
+            return message
+                .channel
+                .send('You need to be in a voice channel to stop the music.');
+        };
+        if (!serverQueue) {
+            return message
+                .channel
+                .send('There is no song that I could stop.');
+        };
+
+        // Stop playing the current song
+        serverQueue
+            .audioPlayer
+            .stop();
+
+        // Clear the queue and delete the server queue entry
+        queue.delete(message.guild.id);
+
+        // Leave the voice channel
+        let connection = await getVoiceConnection(message.guild.id);
+        
+        if (connection) {
+            connection.destroy();
+        };
+
+        if (!connection || connection.joinConfig.channelId !== playlistVoiceChannelId) {
+            return message
+                .channel
+                .send('The bot is not currently in the voice channel.');
+        }
+        return message
+            .channel
+            .send('Stopped the music and left the voice channel.');
     };
 };
 
@@ -241,19 +299,7 @@ async function play(guild : any, song : any) {
         .audioPlayer
         .play(resource);
 
-    // serverQueue     .audioPlayer     .on(AudioPlayerStatus.Idle, async() => {
-    //     if (!isPlaying || isSkipping) {             return;         };
-    // isPlaying = false; // Set the flag to false to indicate the song is no longer
-    // being played         isSkipping = true; // Reset the skip flag
-    // console.log("idle event triggered");         if (serverQueue.loop) {
-    //    serverQueue                 .songs
-    // .push(serverQueue.songs.shift()); // Move the current song to the end of the
-    // queue         } else {             serverQueue                 .songs
-    //         .shift(); // Remove the current song from the queue         };
-    //  await play(guild, serverQueue.songs[0]);         setTimeout(() => {
-    //    isPlaying = true; // Set the flag back to true after starting the next
-    // song             isSkipping = false;         }, 5000);     }); Check if the
-    // event listener is already attached
+
     if (!serverQueue.audioPlayer.listeners('stateChange').includes(onStateChange)) {
         // Attach the event listener for AudioPlayerStatus.Idle
         serverQueue
@@ -273,8 +319,18 @@ async function play(guild : any, song : any) {
 };
 
 async function onStateChange(oldState : any, newState : any, serverQueue : any, guild : any) {
+    if(disconnected){
+        return;
+    };
+    if (newState.status === VoiceConnectionStatus.Disconnected) {
+        // The bot has left the voice channel
 
-    if (newState.status === AudioPlayerStatus.Idle) {
+        queue.delete(guild.id);
+        console.log(`Bot left the voice channel in guild ${guild.id}`);
+        return;
+    };
+
+    if (newState.status === AudioPlayerStatus.Idle && !(newState.status === VoiceConnectionStatus.Disconnected)) {
         if (!isPlaying || isSkipping) {
             return;
         };

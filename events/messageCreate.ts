@@ -9,7 +9,7 @@ module.exports = async(client:any, message:any) => {
 
     try {
         sendchatbotmessage(message);
-        playyoutubeplaylist(message);
+        playyoutubeplaylist(message,client);
     } catch (error) {
         console.error(error);
     }
