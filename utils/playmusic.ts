@@ -13,33 +13,45 @@ const ytpl = require('ytpl');
 
 const queue = new Map();
 const playlistVoiceChannelId = process.env.playlistplayerchannel; // Replace with your desired voice channel ID
+let isPlaying = true; // Flag to track if the song is already being played
+let isSkipping = false; // Flag to track if a skip operation is in progress
 
-const playyoutubeplaylist = async (message) => {
+const playyoutubeplaylist = async(message) => {
     const serverQueue = queue.get(message.guild.id);
 
     if (message.content.startsWith('!playplaylist')) {
-        const playlistUrl = message.content.slice(14);
+        const playlistUrl = message
+            .content
+            .slice(14);
         const voiceChannel = message.member.voice.channel;
 
         if (!voiceChannel) {
-            return message.channel.send('You need to be in a voice channel to play a playlist.');
+            return message
+                .channel
+                .send('You need to be in a voice channel to play a playlist.');
         }
 
         if (voiceChannel.id !== playlistVoiceChannelId) {
-            return message.channel.send('You are not allowed to use this command in this voice channel.');
+            return message
+                .channel
+                .send('You are not allowed to use this command in this voice channel.');
         }
 
         if (!playlistUrl) {
-            return message.channel.send('Invalid playlist link.');
+            return message
+                .channel
+                .send('Invalid playlist link.');
         }
 
         // Fetch playlist details
-        let playlist:any;
+        let playlist : any;
         try {
             playlist = await ytpl(playlistUrl);
         } catch (error) {
             console.error('Error fetching playlist:', error);
-            return message.channel.send('Invalid playlist URL or unable to fetch playlist details.');
+            return message
+                .channel
+                .send('Invalid playlist URL or unable to fetch playlist details.');
         }
 
         const videos = playlist.items;
@@ -69,16 +81,14 @@ const playyoutubeplaylist = async (message) => {
                     title: video.title,
                     url: videoUrl
                 };
-                queueConstructor.songs.push(song);
+                queueConstructor
+                    .songs
+                    .push(song);
             }
 
             try {
 
-                const connection = await joinVoiceChannel({
-                    channelId: voiceChannel.id,
-                    guildId: voiceChannel.guild.id,
-                    adapterCreator: voiceChannel.guild.voiceAdapterCreator
-                });
+                const connection = await joinVoiceChannel({channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator});
 
                 queueConstructor.connection = connection;
                 await connection.subscribe(queueConstructor.audioPlayer);
@@ -89,7 +99,9 @@ const playyoutubeplaylist = async (message) => {
             } catch (err) {
                 console.error('Error joining voice channel:', err);
                 queue.delete(message.guild.id);
-                return message.channel.send('There was an error joining the voice channel.');
+                return message
+                    .channel
+                    .send('There was an error joining the voice channel.');
             }
         } else {
             // Add playlist songs to the existing queue
@@ -99,26 +111,49 @@ const playyoutubeplaylist = async (message) => {
                     title: video.title,
                     url: videoUrl
                 };
-                serverQueue.songs.push(song);
+                serverQueue
+                    .songs
+                    .push(song);
             }
 
-            return message.channel.send('Playlist added to the queue.');
+            return message
+                .channel
+                .send('Playlist added to the queue.');
         }
     }
 
     if (message.content.startsWith('!skip')) {
         if (!message.member.voice.channel) {
-            return message.channel.send('You need to be in a voice channel to skip the music.');
-        }
+            return message
+                .channel
+                .send('You need to be in a voice channel to skip the music.');
+        };
         if (!serverQueue) {
-            return message.channel.send('There is no song that I could skip.');
-        }
-        serverQueue.audioPlayer.stop();
+            return message
+                .channel
+                .send('There is no song that I could skip.');
+        };
+        if (!isPlaying || isSkipping) {
+            return message
+                .channel
+                .send('Skip is under cooldown. Try again in a few seconds.');
+        };
+
+        if (serverQueue.loop) {
+            serverQueue
+                .songs
+                .shift(); // Remove the current song from the queue
+        };
+
+        serverQueue
+            .audioPlayer
+            .stop();
+        return message
+            .channel
+            .send('Skipped the current song.');
     }
 
-
-
-    if (message.content.startsWith('!play')&& !(message.content.startsWith('!playplaylist'))) {
+    if (message.content.startsWith('!play') && !(message.content.startsWith('!playplaylist'))) {
         if (!message.member.voice.channel) {
             return message
                 .channel
@@ -188,7 +223,7 @@ const playyoutubeplaylist = async (message) => {
     };
 };
 
-async function play(guild:any, song:any) {
+async function play(guild : any, song : any) {
     const serverQueue = queue.get(guild.id);
     // const connection = getVoiceConnection(guild.id);
     if (!song) {
@@ -200,23 +235,75 @@ async function play(guild:any, song:any) {
         filter: 'audioonly',
         quality: 'highestaudio'
     });
-    const resource = createAudioResource(stream, { inlineVolume: true });
+    const resource = createAudioResource(stream, {inlineVolume: true});
 
-    await serverQueue.audioPlayer.play(resource);
+    await serverQueue
+        .audioPlayer
+        .play(resource);
 
+    // serverQueue     .audioPlayer     .on(AudioPlayerStatus.Idle, async() => {
+    //     if (!isPlaying || isSkipping) {             return;         };
+    // isPlaying = false; // Set the flag to false to indicate the song is no longer
+    // being played         isSkipping = true; // Reset the skip flag
+    // console.log("idle event triggered");         if (serverQueue.loop) {
+    //    serverQueue                 .songs
+    // .push(serverQueue.songs.shift()); // Move the current song to the end of the
+    // queue         } else {             serverQueue                 .songs
+    //         .shift(); // Remove the current song from the queue         };
+    //  await play(guild, serverQueue.songs[0]);         setTimeout(() => {
+    //    isPlaying = true; // Set the flag back to true after starting the next
+    // song             isSkipping = false;         }, 5000);     }); Check if the
+    // event listener is already attached
+    if (!serverQueue.audioPlayer.listeners('stateChange').includes(onStateChange)) {
+        // Attach the event listener for AudioPlayerStatus.Idle
+        serverQueue
+            .audioPlayer
+            .on(AudioPlayerStatus.Idle, (oldState : any, newState : any) => {
+                onStateChange(oldState, newState, serverQueue, guild);
+            });
+    };
 
-    serverQueue.audioPlayer.on(AudioPlayerStatus.Idle, async () => {
-        if (serverQueue.loop) {
-            play(guild, serverQueue.songs[0]);
-        } else {
-            serverQueue.songs.shift();
-            await play(guild, serverQueue.songs[0]);
+    serverQueue
+        .audioPlayer
+        .on('error', (error : any) => console.error('Error playing song:', error));
+
+    serverQueue
+        .textChannel
+        .send(`Now playing: **${song.title}**`);
+};
+
+async function onStateChange(oldState : any, newState : any, serverQueue : any, guild : any) {
+
+    if (newState.status === AudioPlayerStatus.Idle) {
+        if (!isPlaying || isSkipping) {
+            return;
         };
-    });
 
-    serverQueue.audioPlayer.on('error', (error:any) => console.error('Error playing song:', error));
+        isPlaying = false; // Set the flag to false to indicate the song is no longer being played
+        isSkipping = true; // Reset the skip flag
+        console.log("idle event triggered");
+        if (serverQueue
+            ?.loop) {
+            serverQueue
+                .songs
+                .push(serverQueue.songs.shift()); // Move the current song to the end of the queue
+        } else {
+            serverQueue
+                .songs
+                .shift(); // Remove the current song from the queue
+        };
 
-    serverQueue.textChannel.send(`Now playing: **${song.title}**`);
-}
+        if (serverQueue.songs.length > 0) {
+            await play(guild, serverQueue.songs[0]);
+        } else {
+            queue.delete(guild.id);
+        };
+
+        setTimeout(() => {
+            isPlaying = true; // Set the flag back to true after starting the next song
+            isSkipping = false;
+        }, 5000);
+    };
+};
 
 export {playyoutubeplaylist};
