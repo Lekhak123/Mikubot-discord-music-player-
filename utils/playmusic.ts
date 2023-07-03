@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import { Message, channelLink } from "discord.js";
 import { playYoutubePlaylist } from "./musicplayer/youtube/playplaylist";
 import { skip } from "./musicplayer/youtube/commands/skip";
 import { resume } from "./musicplayer/youtube/commands/resume";
@@ -12,8 +12,8 @@ let disconnected = false;
 
 
 const playyoutubeplaylist = async(message:Message) => {
-    const serverQueue = queue.get(message.guild.id);
-
+    let serverQueue =await queue.get(message.guild.id);
+    console.log(serverQueue,typeof serverQueue)
     if (message.content.startsWith('!playplaylist')) {
         playYoutubePlaylist(queue,serverQueue,message,disconnected,isPlaying,isSkipping);
     };
@@ -33,6 +33,7 @@ const playyoutubeplaylist = async(message:Message) => {
     if (message.content.startsWith('!loop')) {
         loop(message,serverQueue);
     };
+    return;
 };
 
 

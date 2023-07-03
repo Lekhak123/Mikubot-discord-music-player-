@@ -1,17 +1,13 @@
-import { Message } from "discord.js";
-import { playmusic } from "../play";
-const {
-    joinVoiceChannel,
-    createAudioPlayer,
-    NoSubscriberBehavior,
-    VoiceConnectionStatus,
-} = require('@discordjs/voice');
+import {Message, VoiceState} from "discord.js";
+import {playmusic} from "../play";
+import {onStateChange} from "../statechange";
+const {AudioPlayerStatus, joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, VoiceConnectionStatus} = require('@discordjs/voice');
+
 const ytpl = require('ytpl');
-
-
 export {playYoutubePlaylist};
 
-const playYoutubePlaylist = async(queue:any,serverQueue:any,message:Message,disconnected:boolean,isPlaying:boolean,isSkipping:boolean) => {
+const playYoutubePlaylist = async(queue : any, serverQueue : any, message : Message, disconnected : boolean, isPlaying : boolean, isSkipping : boolean) => {
+
     const playlistVoiceChannelId = process.env.playlistplayerchannel; // Replace with your desired voice channel ID
     const playlistUrl = message
         .content
@@ -65,8 +61,6 @@ const playYoutubePlaylist = async(queue:any,serverQueue:any,message:Message,disc
                 }
             })
         };
-        queue.set(message.guild.id, queueConstructor);
-
         // Add playlist songs to the queue
         for (const video of videos) {
             const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
@@ -75,24 +69,45 @@ const playYoutubePlaylist = async(queue:any,serverQueue:any,message:Message,disc
                 url: videoUrl
             };
             queueConstructor
-                .songs
-                .push(song);
+            .songs
+            .push(song);
         };
-
+        
+        queue.set(message.guild.id, queueConstructor);
         try {
 
             const connection = await joinVoiceChannel({channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator});
-            connection.on(VoiceConnectionStatus.Disconnected, (oldState, newState) => {
-                disconnected = true;
-                console.log('Bot was kicked from the voice channel');
-            });
+
             queueConstructor.connection = connection;
             await connection.subscribe(queueConstructor.audioPlayer);
-            connection.on(VoiceConnectionStatus.Ready, () => {
-                console.log('The connection has entered the Ready state - ready to play audio!');
+
+            const readyListener = (queueConstructor:any,message:Message,queue:any) => {
+                // console.log('The connection has entered the Ready state - ready to play audio!');
                 playmusic(message.guild, queueConstructor.songs[0], queue, disconnected, isPlaying, isSkipping);
                 disconnected = false;
-            });
+                connection.on(VoiceConnectionStatus.Disconnected, createDisconnectedListener(queueConstructor, message, queue));
+
+            };
+
+            const createDisconnectedListener = (queueConstructor:any,message:Message,queue:any) => {
+                return () => {
+                    disconnected = true;
+                    serverQueue=null;
+                    queue.delete(message.guild.id);
+                    queueConstructor.connection.destroy();
+                    queueConstructor
+                            .audioPlayer
+                            .off(AudioPlayerStatus.Idle, onStateChange); // Remove the onStateChange listener
+
+                    connection.off(VoiceConnectionStatus.Ready, readyListener); // Remove the readyListener
+                    return message
+                        .channel
+                        .send(`Bot left the voice channel in guild ${message.guild.id}`);
+                };
+            };
+
+            connection.on(VoiceConnectionStatus.Ready,()=> readyListener(queueConstructor,message,queue));
+
         } catch (err) {
             console.error('Error joining voice channel:', err);
             queue.delete(message.guild.id);

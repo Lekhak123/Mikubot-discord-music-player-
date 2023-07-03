@@ -12,20 +12,22 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
         return;
     };
 
+    if(!serverQueue){
+        console.log("not server queue");
+        return;
+    }
     const {stream} = await playdl.stream(song.url, {discordPlayerCompatibility: true});
 
     const resource = createAudioResource(stream);
     await serverQueue
         .audioPlayer
         .play(resource);
-    if (!serverQueue.audioPlayer.listeners('stateChange').includes(onStateChange)) {
-        // Attach the event listener for AudioPlayerStatus.Idle
-        serverQueue
-            .audioPlayer
-            .on(AudioPlayerStatus.Idle, (oldState : any, newState : any) => {
-                onStateChange(playmusic, isPlaying, isSkipping, queue, disconnected, oldState, newState, serverQueue, guild);
-            });
+
+    const stateChangeHandler = (oldState : any, newState : any,audioPlayer:any) => {
+        onStateChange(playmusic, isPlaying, isSkipping, queue, disconnected, oldState, newState, serverQueue, guild,audioPlayer);
     };
+    serverQueue.audioPlayer.on(AudioPlayerStatus.Idle, (oldState : any, newState : any)=>stateChangeHandler(oldState, newState,serverQueue.audioPlayer));
+
 
     serverQueue
         .audioPlayer
@@ -34,4 +36,5 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
     serverQueue
         .textChannel
         .send(`Now playing: **${song.title}**`);
+        return;
 };

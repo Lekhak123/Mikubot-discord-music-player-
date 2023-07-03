@@ -29,7 +29,7 @@
     "start": "nodemon main.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "ruriko123",
   "license": "ISC",
   "description": ""
 }
