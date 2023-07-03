@@ -1,8 +1,7 @@
-import { Message } from "discord.js";
-
+import {Message} from "discord.js";
 
 export {skip};
-const skip = async(message:Message,serverQueue:any,isPlaying:boolean,isSkipping:boolean)=>{
+const skip = async(message : Message, serverQueue : any, isPlaying : boolean, isSkipping : boolean) => {
     if (!message.member.voice.channel) {
         return message
             .channel

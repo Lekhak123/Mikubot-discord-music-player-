@@ -69,10 +69,10 @@ const playYoutubePlaylist = async(queue : any, serverQueue : any, message : Mess
                 url: videoUrl
             };
             queueConstructor
-            .songs
-            .push(song);
+                .songs
+                .push(song);
         };
-        
+
         queue.set(message.guild.id, queueConstructor);
         try {
 
@@ -81,32 +81,35 @@ const playYoutubePlaylist = async(queue : any, serverQueue : any, message : Mess
             queueConstructor.connection = connection;
             await connection.subscribe(queueConstructor.audioPlayer);
 
-            const readyListener = (queueConstructor:any,message:Message,queue:any) => {
-                // console.log('The connection has entered the Ready state - ready to play audio!');
+            const readyListener = (queueConstructor : any, message : Message, queue : any) => {
+                // console.log('The connection has entered the Ready state - ready to play
+                // audio!');
                 playmusic(message.guild, queueConstructor.songs[0], queue, disconnected, isPlaying, isSkipping);
                 disconnected = false;
                 connection.on(VoiceConnectionStatus.Disconnected, createDisconnectedListener(queueConstructor, message, queue));
 
             };
 
-            const createDisconnectedListener = (queueConstructor:any,message:Message,queue:any) => {
+            const createDisconnectedListener = (queueConstructor : any, message : Message, queue : any) => {
                 return () => {
                     disconnected = true;
-                    serverQueue=null;
+                    serverQueue = null;
                     queue.delete(message.guild.id);
-                    queueConstructor.connection.destroy();
                     queueConstructor
-                            .audioPlayer
-                            .off(AudioPlayerStatus.Idle, onStateChange); // Remove the onStateChange listener
+                        .connection
+                        .destroy();
+                    queueConstructor
+                        .audioPlayer
+                        .off(AudioPlayerStatus.Idle, onStateChange); // Remove the onStateChange listener
 
                     connection.off(VoiceConnectionStatus.Ready, readyListener); // Remove the readyListener
                     return message
                         .channel
-                        .send(`Bot left the voice channel in guild ${message.guild.id}`);
+                        .send(`Bot has left the voice channel in guild <#${message.guild.name}>`);
                 };
             };
 
-            connection.on(VoiceConnectionStatus.Ready,()=> readyListener(queueConstructor,message,queue));
+            connection.on(VoiceConnectionStatus.Ready, () => readyListener(queueConstructor, message, queue));
 
         } catch (err) {
             console.error('Error joining voice channel:', err);

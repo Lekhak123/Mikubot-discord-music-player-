@@ -12,7 +12,7 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
         return;
     };
 
-    if(!serverQueue){
+    if (!serverQueue) {
         console.log("not server queue");
         return;
     }
@@ -23,11 +23,12 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
         .audioPlayer
         .play(resource);
 
-    const stateChangeHandler = (oldState : any, newState : any,audioPlayer:any) => {
-        onStateChange(playmusic, isPlaying, isSkipping, queue, disconnected, oldState, newState, serverQueue, guild,audioPlayer);
+    const stateChangeHandler = (oldState : any, newState : any, audioPlayer : any) => {
+        onStateChange(playmusic, isPlaying, isSkipping, queue, disconnected, oldState, newState, serverQueue, guild, audioPlayer);
     };
-    serverQueue.audioPlayer.on(AudioPlayerStatus.Idle, (oldState : any, newState : any)=>stateChangeHandler(oldState, newState,serverQueue.audioPlayer));
-
+    serverQueue
+        .audioPlayer
+        .on(AudioPlayerStatus.Idle, (oldState : any, newState : any) => stateChangeHandler(oldState, newState, serverQueue.audioPlayer));
 
     serverQueue
         .audioPlayer
@@ -36,5 +37,5 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
     serverQueue
         .textChannel
         .send(`Now playing: **${song.title}**`);
-        return;
+    return;
 };
