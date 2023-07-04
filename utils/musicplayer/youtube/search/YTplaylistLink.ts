@@ -6,10 +6,20 @@ const searchYTPlaylist = async(playlistUrl : string) => {
     let playlist : any;
     try {
         playlist = await ytpl(playlistUrl);
+        let playlistdata : Array < any > = [];
+        for (let x in playlist) {
+            playlistdata.push({
+                url: playlist[x]
+                    ?.url,
+                title: playlist[x]
+                    ?.title,
+                source: "yt"
+            });
+        };
         let SongplayerInfo = {
-            source:"yt",
+            source: "yt",
             type: "multiple",
-            videoDetails: playlist
+            videoDetails: playlistdata
         };
         return SongplayerInfo;
     } catch (error) {

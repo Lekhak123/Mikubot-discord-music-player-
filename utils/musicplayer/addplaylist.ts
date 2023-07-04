@@ -1,17 +1,14 @@
-import {Message, VoiceState} from "discord.js";
+import {Message} from "discord.js";
 import {playmusic} from "./play";
 import {onStateChange} from "./statechange";
 const {AudioPlayerStatus, joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, VoiceConnectionStatus} = require('@discordjs/voice');
 
-const ytpl = require('ytpl');
 export {playPlaylist};
 
-const playPlaylist = async(queue : any, serverQueue : any, message : Message, disconnected : boolean, isPlaying : boolean, isSkipping : boolean) => {
+const playPlaylist = async(queue : any, serverQueue : any, message : Message, disconnected : boolean, isPlaying : boolean, isSkipping : boolean, songResult : any) => {
 
     const playlistVoiceChannelId = process.env.playlistplayerchannel; // Replace with your desired voice channel ID
-    const playlistUrl = message
-        .content
-        .slice(14);
+
     const voiceChannel = message.member.voice.channel;
 
     if (!voiceChannel) {
@@ -25,25 +22,6 @@ const playPlaylist = async(queue : any, serverQueue : any, message : Message, di
             .channel
             .send('You are not allowed to use this command in this voice channel.');
     };
-
-    if (!playlistUrl) {
-        return message
-            .channel
-            .send('Invalid playlist link.');
-    };
-
-    // Fetch playlist details
-    let playlist : any;
-    try {
-        playlist = await ytpl(playlistUrl);
-    } catch (error) {
-        console.error('Error fetching playlist:', error);
-        return message
-            .channel
-            .send('Invalid playlist URL or unable to fetch playlist details.');
-    };
-
-    const videos = playlist.items;
 
     // Create server queue if it doesn't exist
     if (!serverQueue) {
@@ -61,17 +39,21 @@ const playPlaylist = async(queue : any, serverQueue : any, message : Message, di
                 }
             })
         };
-        // Add playlist songs to the queue
-        for (const video of videos) {
-            const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
-            const song = {
-                title: video.title,
-                url: videoUrl,
-                type:"yt"
-            };
+
+
+        if (songResult.type === "single") {
+            // Add playlist songs to the queue
             queueConstructor
                 .songs
-                .push(song);
+                .push(songResult.videoDetails);
+        };
+        if (songResult.type === "multiple") {
+            // Add playlist songs to the queue
+            for (const song of songResult.videoDetails) {
+                queueConstructor
+                    .songs
+                    .push(song);
+            };
         };
 
         queue.set(message.guild.id, queueConstructor);
@@ -121,16 +103,20 @@ const playPlaylist = async(queue : any, serverQueue : any, message : Message, di
         };
     } else {
         // Add playlist songs to the existing queue
-        for (const video of videos) {
-            const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
-            const song = {
-                title: video.title,
-                url: videoUrl,
-                type:"yt"
-            };
+
+        if (songResult.type === "single") {
+            // Add playlist songs to the queue
             serverQueue
                 .songs
-                .push(song);
+                .push(songResult.videoDetails);
+        };
+        if (songResult.type === "multiple") {
+            // Add playlist songs to the queue
+            for (const song of songResult.videoDetails) {
+                serverQueue
+                    .songs
+                    .push(song);
+            };
         };
 
         return message

@@ -8,8 +8,9 @@ const searchYTsong = async(songSearchArg : string) => {
             limit: 1
         });
         const videoDetails = {
+            source:"yt",
             title: yt_info[0].title,
-            url: yt_info[0].url
+            url: yt_info[0].url,
         };
         let SongplayerInfo = {
             source:"yt",

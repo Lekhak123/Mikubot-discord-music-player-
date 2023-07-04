@@ -20,6 +20,7 @@ const searchSingleYTlink = async(singlelinkURL : string) => {
             info = await ytdl.getInfo(videoId);
         };
         const videoDetails = {
+            source:"yt",
             title: info.videoDetails.title,
             url: info.videoDetails.video_url
         };

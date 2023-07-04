@@ -17,7 +17,6 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
         return;
     };
 
-
     if (song.source === "yt") {
         const stream = await playdl.stream(song.videoDetails.url, {discordPlayerCompatibility: true});
         const resource = createAudioResource(stream.stream, {inputType: stream.type});
@@ -32,7 +31,6 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
         await serverQueue
             .audioPlayer
             .play(resource);
-
     };
 
     const stateChangeHandler = (oldState : any, newState : any, audioPlayer : any) => {

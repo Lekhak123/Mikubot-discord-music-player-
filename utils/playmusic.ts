@@ -34,7 +34,7 @@ const discordMusicPlayer = async(message : Message) => {
         try {
 
             let songResult = await fetchPlayerInfo(message.content.slice(14))
-            playPlaylist(queue, serverQueue, message, disconnected, isPlaying, isSkipping);
+            playPlaylist(queue, serverQueue, message, disconnected, isPlaying, isSkipping,songResult);
         } catch (error) {
             message.channel.send(`${error}`);
             return;

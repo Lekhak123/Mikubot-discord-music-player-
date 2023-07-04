@@ -12,6 +12,7 @@ const searchSpotifyPlaylistAlbum = async(spotifyPLaylistAlbumURL : string) => {
         let songNameList : Array < any >= [];
         for (let x in tracks) {
             songNameList.push({
+                source:"spotify",
                 title: tracks[x]
                     ?.name,
                 url: tracks[x]
