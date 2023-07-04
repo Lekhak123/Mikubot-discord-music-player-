@@ -13,19 +13,19 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
     };
 
     if (!serverQueue) {
-        console.log("not server queue");
         return;
     };
 
     if (song.source === "yt") {
-        const stream = await playdl.stream(song.videoDetails.url, {discordPlayerCompatibility: true});
+        console.log(song)
+        const stream = await playdl.stream(song.url, {discordPlayerCompatibility: true});
         const resource = createAudioResource(stream.stream, {inputType: stream.type});
         await serverQueue
             .audioPlayer
             .play(resource);
     };
     if (song.source === "spotify") {
-        let searched = await playdl.search(`${song.videoDetails.title.name}`, {limit: 1}) // This will search the found track on youtube.
+        let searched = await playdl.search(`${song.title}`, {limit: 1}) // This will search the found track on youtube.
         const stream = await playdl.stream(searched[0].url, {discordPlayerCompatibility: true});
         const resource = createAudioResource(stream.stream, {inputType: stream.type});
         await serverQueue

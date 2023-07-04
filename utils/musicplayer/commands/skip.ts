@@ -17,7 +17,11 @@ const skip = async(message : Message, serverQueue : any, isPlaying : boolean, is
             .channel
             .send('Skip is under cooldown. Try again in a few seconds.');
     };
-
+    if(serverQueue.songs.length===1){
+        return message
+        .channel
+        .send('Cannot skip this song.');
+    }
     if (serverQueue.loop) {
         serverQueue
             .songs

@@ -3,9 +3,9 @@ import {playmusic} from "./play";
 import {onStateChange} from "./statechange";
 const {AudioPlayerStatus, joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, VoiceConnectionStatus} = require('@discordjs/voice');
 
-export {playPlaylist};
+export {startPlayer};
 
-const playPlaylist = async(queue : any, serverQueue : any, message : Message, disconnected : boolean, isPlaying : boolean, isSkipping : boolean, songResult : any) => {
+const startPlayer = async(queue : any, serverQueue : any, message : Message, disconnected : boolean, isPlaying : boolean, isSkipping : boolean, songResult : any) => {
 
     const playlistVoiceChannelId = process.env.playlistplayerchannel; // Replace with your desired voice channel ID
 

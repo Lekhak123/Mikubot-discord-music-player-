@@ -1,10 +1,10 @@
 import {Message} from "discord.js";
-import {playPlaylist} from "./musicplayer/addplaylist";
+import {startPlayer} from "./musicplayer/startPlayer";
 import {skip} from "./musicplayer/commands/skip";
 import {resume} from "./musicplayer/commands/resume";
 import {pause} from "./musicplayer/commands/pause";
 import {loop} from "./musicplayer/commands/loop";
-import {playSingleYoutubeSong} from "./musicplayer/addSingle";
+
 import { fetchPlayerInfo } from "./musicplayer/fetchPlayerInfo";
 let queue = new Map();
 let playerstatus = new Map();
@@ -30,19 +30,17 @@ const discordMusicPlayer = async(message : Message) => {
         playerstatusQueue = playerStatusQueueConstructor;
     };
 
-    if (message.content.startsWith('!playplaylist')) {
+    if (message.content.startsWith('!play')) {
         try {
 
             let songResult = await fetchPlayerInfo(message.content.slice(14))
-            playPlaylist(queue, serverQueue, message, disconnected, isPlaying, isSkipping,songResult);
+            startPlayer(queue, serverQueue, message, disconnected, isPlaying, isSkipping,songResult);
         } catch (error) {
             message.channel.send(`${error}`);
             return;
         }
     };
-    if (message.content.startsWith('!playsingle')) {
-        playSingleYoutubeSong(queue, serverQueue, message, disconnected, isPlaying, isSkipping);
-    };
+
     if (message.content.startsWith('!skip')) {
         skip(message, serverQueue, isPlaying, isSkipping);
     };

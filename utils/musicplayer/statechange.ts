@@ -21,7 +21,7 @@ async function onStateChange(playmusic : any, isPlaying : boolean, isSkipping : 
             serverQueue
                 .songs
                 .push(serverQueue.songs.shift()); // Move the current song to the end of the queue
-        } else if (serverQueue &&serverQueue.songs.length > 0) {
+        } else if (serverQueue &&serverQueue.songs.length > 1) {
             serverQueue
                 .songs
                 .shift(); // Remove the current song from the queue
@@ -29,8 +29,12 @@ async function onStateChange(playmusic : any, isPlaying : boolean, isSkipping : 
 
         if (serverQueue &&serverQueue.songs.length > 0) {
             playmusic(guild, serverQueue.songs[0], queue, disconnected, isPlaying, isSkipping);
+            if(serverQueue.length===1){
+                serverQueue=null;
+            }
             return;
         } else if(!serverQueue) {
+            serverQueue=null;
             queue.delete(guild.id);
             return;
         };

@@ -5,17 +5,16 @@ const searchYTPlaylist = async(playlistUrl : string) => {
     // Fetch playlist details
     let playlist : any;
     try {
+        console.log(playlistUrl)
         playlist = await ytpl(playlistUrl);
-        let playlistdata : Array < any > = [];
-        for (let x in playlist) {
+        let playlistdata : Array <any> = [];
+        playlist.items.map((x:any)=>{
             playlistdata.push({
-                url: playlist[x]
-                    ?.url,
-                title: playlist[x]
-                    ?.title,
+                url: x.url,
+                title:x.title,
                 source: "yt"
             });
-        };
+        })
         let SongplayerInfo = {
             source: "yt",
             type: "multiple",
@@ -23,6 +22,7 @@ const searchYTPlaylist = async(playlistUrl : string) => {
         };
         return SongplayerInfo;
     } catch (error) {
+        console.log(error)
         throw new Error(error || "Error occured");
     };
 };
