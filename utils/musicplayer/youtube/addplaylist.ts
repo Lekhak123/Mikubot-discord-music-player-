@@ -66,7 +66,8 @@ const playYoutubePlaylist = async(queue : any, serverQueue : any, message : Mess
             const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
             const song = {
                 title: video.title,
-                url: videoUrl
+                url: videoUrl,
+                type:"yt"
             };
             queueConstructor
                 .songs

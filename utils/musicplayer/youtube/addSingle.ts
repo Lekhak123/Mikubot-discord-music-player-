@@ -38,17 +38,13 @@ const playSingleYoutubeSong = async(queue : any, serverQueue : any, message : Me
     try {
         let info : any;
         if (youtubecookie) {
-            let  requestOptions= {
+            let requestOptions = {
                 headers: {
                     cookie: youtubecookie
                 }
             };
-            const videoId = ytdl.getURLVideoID(singlelinkURL, {
-                requestOptions: requestOptions
-            });
-            info = await ytdl.getInfo(videoId, {
-                requestOptions:requestOptions
-            });
+            const videoId = ytdl.getURLVideoID(singlelinkURL, {requestOptions: requestOptions});
+            info = await ytdl.getInfo(videoId, {requestOptions: requestOptions});
 
         } else {
             const videoId = ytdl.getURLVideoID(singlelinkURL);
@@ -59,7 +55,6 @@ const playSingleYoutubeSong = async(queue : any, serverQueue : any, message : Me
             url: info.videoDetails.video_url
         };
         youtubeVideoResult = videoDetails;
-        console.log(youtubeVideoResult);
     } catch (error) {
         console.error('Error fetching playlist:', error);
         return message
@@ -86,7 +81,8 @@ const playSingleYoutubeSong = async(queue : any, serverQueue : any, message : Me
         // Add playlist songs to the queue
         const song = {
             title: youtubeVideoResult.title,
-            url: youtubeVideoResult.url
+            url: youtubeVideoResult.url,
+            type:"yt"
         };
         queueConstructor
             .songs

@@ -15,13 +15,14 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
     if (!serverQueue) {
         console.log("not server queue");
         return;
-    }
-    const {stream} = await playdl.stream(song.url, {discordPlayerCompatibility: true});
-
-    const resource = createAudioResource(stream);
-    await serverQueue
-        .audioPlayer
-        .play(resource);
+    };
+    if(song.type==="yt"){
+        const {stream} = await playdl.stream(song.url, {discordPlayerCompatibility: true});
+        const resource = createAudioResource(stream);
+        await serverQueue
+            .audioPlayer
+            .play(resource);
+    };
 
     const stateChangeHandler = (oldState : any, newState : any, audioPlayer : any) => {
         onStateChange(playmusic, isPlaying, isSkipping, queue, disconnected, oldState, newState, serverQueue, guild, audioPlayer);

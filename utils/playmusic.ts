@@ -1,9 +1,9 @@
 import {Message} from "discord.js";
 import {playYoutubePlaylist} from "./musicplayer/youtube/addplaylist";
-import {skip} from "./musicplayer/youtube/commands/skip";
-import {resume} from "./musicplayer/youtube/commands/resume";
-import {pause} from "./musicplayer/youtube/commands/pause";
-import {loop} from "./musicplayer/youtube/commands/loop";
+import {skip} from "./musicplayer/commands/skip";
+import {resume} from "./musicplayer/commands/resume";
+import {pause} from "./musicplayer/commands/pause";
+import {loop} from "./musicplayer/commands/loop";
 import {playSingleYoutubeSong} from "./musicplayer/youtube/addSingle";
 let queue = new Map();
 let playerstatus = new Map();
