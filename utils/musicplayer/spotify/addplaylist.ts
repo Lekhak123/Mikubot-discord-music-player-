@@ -1,12 +1,12 @@
-import {Message, VoiceState} from "discord.js";
+import {Message} from "discord.js";
 import {playmusic} from "../play";
 import {onStateChange} from "../statechange";
 const {AudioPlayerStatus, joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, VoiceConnectionStatus} = require('@discordjs/voice');
 
 const ytpl = require('ytpl');
-export {playYoutubePlaylist};
+export {playSpotifyPlaylist};
 
-const playYoutubePlaylist = async(queue : any, serverQueue : any, message : Message, disconnected : boolean, isPlaying : boolean, isSkipping : boolean) => {
+const playSpotifyPlaylist = async(queue : any, serverQueue : any, message : Message, disconnected : boolean, isPlaying : boolean, isSkipping : boolean) => {
 
     const playlistVoiceChannelId = process.env.playlistplayerchannel; // Replace with your desired voice channel ID
     const playlistUrl = message

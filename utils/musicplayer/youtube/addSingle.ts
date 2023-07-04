@@ -138,7 +138,8 @@ const playSingleYoutubeSong = async(queue : any, serverQueue : any, message : Me
 
         const song = {
             title: youtubeVideoResult.title,
-            url: youtubeVideoResult.url
+            url: youtubeVideoResult.url,
+            type:"yt"
         };
         serverQueue
             .songs

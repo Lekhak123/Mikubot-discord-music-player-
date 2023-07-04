@@ -1,15 +1,16 @@
-import {Message, VoiceState} from "discord.js";
+import {Message} from "discord.js";
 import {playmusic} from "../play";
 import {onStateChange} from "../statechange";
 const {AudioPlayerStatus, joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, VoiceConnectionStatus} = require('@discordjs/voice');
 
-const ytpl = require('ytpl');
-export {playYoutubePlaylist};
+const ytdl = require('ytdl-core');
+export {playSingleSpotifySong};
 
-const playYoutubePlaylist = async(queue : any, serverQueue : any, message : Message, disconnected : boolean, isPlaying : boolean, isSkipping : boolean) => {
+const playSingleSpotifySong = async(queue : any, serverQueue : any, message : Message, disconnected : boolean, isPlaying : boolean, isSkipping : boolean) => {
 
     const playlistVoiceChannelId = process.env.playlistplayerchannel; // Replace with your desired voice channel ID
-    const playlistUrl = message
+    const youtubecookie = process.env.youtubecookie;
+    const singlelinkURL = message
         .content
         .slice(14);
     const voiceChannel = message.member.voice.channel;
@@ -26,24 +27,40 @@ const playYoutubePlaylist = async(queue : any, serverQueue : any, message : Mess
             .send('You are not allowed to use this command in this voice channel.');
     };
 
-    if (!playlistUrl) {
+    if (!singlelinkURL) {
         return message
             .channel
             .send('Invalid playlist link.');
     };
 
     // Fetch playlist details
-    let playlist : any;
+    let youtubeVideoResult : any;
     try {
-        playlist = await ytpl(playlistUrl);
+        let info : any;
+        if (youtubecookie) {
+            let requestOptions = {
+                headers: {
+                    cookie: youtubecookie
+                }
+            };
+            const videoId = ytdl.getURLVideoID(singlelinkURL, {requestOptions: requestOptions});
+            info = await ytdl.getInfo(videoId, {requestOptions: requestOptions});
+
+        } else {
+            const videoId = ytdl.getURLVideoID(singlelinkURL);
+            info = await ytdl.getInfo(videoId);
+        };
+        const videoDetails = {
+            title: info.videoDetails.title,
+            url: info.videoDetails.video_url
+        };
+        youtubeVideoResult = videoDetails;
     } catch (error) {
         console.error('Error fetching playlist:', error);
         return message
             .channel
-            .send('Invalid playlist URL or unable to fetch playlist details.');
+            .send('Invalid URL or unable to fetch youtube video details.');
     };
-
-    const videos = playlist.items;
 
     // Create server queue if it doesn't exist
     if (!serverQueue) {
@@ -62,17 +79,14 @@ const playYoutubePlaylist = async(queue : any, serverQueue : any, message : Mess
             })
         };
         // Add playlist songs to the queue
-        for (const video of videos) {
-            const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
-            const song = {
-                title: video.title,
-                url: videoUrl,
-                type:"yt"
-            };
-            queueConstructor
-                .songs
-                .push(song);
+        const song = {
+            title: youtubeVideoResult.title,
+            url: youtubeVideoResult.url,
+            type:"yt"
         };
+        queueConstructor
+            .songs
+            .push(song);
 
         queue.set(message.guild.id, queueConstructor);
         try {
@@ -121,20 +135,20 @@ const playYoutubePlaylist = async(queue : any, serverQueue : any, message : Mess
         };
     } else {
         // Add playlist songs to the existing queue
-        for (const video of videos) {
-            const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
-            const song = {
-                title: video.title,
-                url: videoUrl,
-                type:"yt"
-            };
-            serverQueue
-                .songs
-                .push(song);
-        };
 
-        return message
-            .channel
-            .send('Playlist added to the queue.');
+        const song = {
+            title: youtubeVideoResult.title,
+            url: youtubeVideoResult.url,
+            type:"yt"
+        };
+        serverQueue
+            .songs
+            .push(song);
     };
+
+    return message
+        .channel
+        .send(`**${youtubeVideoResult
+            ?.title || "Song"}** added to the queue.`);
+
 };

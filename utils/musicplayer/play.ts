@@ -16,13 +16,26 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
         console.log("not server queue");
         return;
     };
-    if(song.type==="yt"){
-        const {stream} = await playdl.stream(song.url, {discordPlayerCompatibility: true});
-        const resource = createAudioResource(stream);
+
+    // // Wildcard: check it later
+    // if (playdl.is_expired()) {
+    //     await playdl.refreshToken() // This will check if access token has expired or not. If yes, then refresh the token.
+    // };
+    // if (song.type === "yt") {
+        const stream = await playdl.stream(song.url, {discordPlayerCompatibility: true});
+        const resource = createAudioResource(stream.stream, {inputType: stream.type});
         await serverQueue
             .audioPlayer
             .play(resource);
-    };
+    // };
+    // if (song.type === "spotify") {
+    //     const stream = await playdl.stream(song.url, {discordPlayerCompatibility: true});
+    //     const resource = createAudioResource(stream.stream, {inputType: stream.type});
+    //     await serverQueue
+    //         .audioPlayer
+    //         .play(resource);
+
+    // };
 
     const stateChangeHandler = (oldState : any, newState : any, audioPlayer : any) => {
         onStateChange(playmusic, isPlaying, isSkipping, queue, disconnected, oldState, newState, serverQueue, guild, audioPlayer);
