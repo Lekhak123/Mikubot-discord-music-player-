@@ -1,5 +1,5 @@
 import { sendchatbotmessage } from "@utils/chatbotmessage";
-import { playyoutubeplaylist } from "@utils/playmusic";
+import { discordMusicPlayer } from "@utils/playmusic";
 
 
 module.exports = async(client:any, message:any) => {
@@ -9,7 +9,7 @@ module.exports = async(client:any, message:any) => {
 
     try {
         sendchatbotmessage(message);
-        playyoutubeplaylist(message);
+        discordMusicPlayer(message);
     } catch (error) {
         console.error(error);
     }
