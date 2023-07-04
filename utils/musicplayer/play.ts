@@ -17,25 +17,23 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
         return;
     };
 
-    // // Wildcard: check it later
-    // if (playdl.is_expired()) {
-    //     await playdl.refreshToken() // This will check if access token has expired or not. If yes, then refresh the token.
-    // };
-    // if (song.type === "yt") {
-        const stream = await playdl.stream(song.url, {discordPlayerCompatibility: true});
+
+    if (song.source === "yt") {
+        const stream = await playdl.stream(song.videoDetails.url, {discordPlayerCompatibility: true});
         const resource = createAudioResource(stream.stream, {inputType: stream.type});
         await serverQueue
             .audioPlayer
             .play(resource);
-    // };
-    // if (song.type === "spotify") {
-    //     const stream = await playdl.stream(song.url, {discordPlayerCompatibility: true});
-    //     const resource = createAudioResource(stream.stream, {inputType: stream.type});
-    //     await serverQueue
-    //         .audioPlayer
-    //         .play(resource);
+    };
+    if (song.source === "spotify") {
+        let searched = await playdl.search(`${song.videoDetails.title.name}`, {limit: 1}) // This will search the found track on youtube.
+        const stream = await playdl.stream(searched[0].url, {discordPlayerCompatibility: true});
+        const resource = createAudioResource(stream.stream, {inputType: stream.type});
+        await serverQueue
+            .audioPlayer
+            .play(resource);
 
-    // };
+    };
 
     const stateChangeHandler = (oldState : any, newState : any, audioPlayer : any) => {
         onStateChange(playmusic, isPlaying, isSkipping, queue, disconnected, oldState, newState, serverQueue, guild, audioPlayer);

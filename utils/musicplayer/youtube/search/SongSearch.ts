@@ -1,8 +1,8 @@
 const playdl = require('play-dl');
 
-export {searchSingleYTlink};
+export {searchYTsong};
 
-const searchSingleYTlink = async(songSearchArg : string) => {
+const searchYTsong = async(songSearchArg : string) => {
     try {
         let yt_info = await playdl.search(songSearchArg, {
             limit: 1
@@ -12,7 +12,7 @@ const searchSingleYTlink = async(songSearchArg : string) => {
             url: yt_info[0].url
         };
         let SongplayerInfo = {
-            source:"youtube",
+            source:"yt",
             type: "single",
             videoDetails:videoDetails,
         };

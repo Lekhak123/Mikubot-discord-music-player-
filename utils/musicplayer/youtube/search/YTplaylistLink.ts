@@ -7,7 +7,7 @@ const searchYTPlaylist = async(playlistUrl : string) => {
     try {
         playlist = await ytpl(playlistUrl);
         let SongplayerInfo = {
-            source:"youtube",
+            source:"yt",
             type: "multiple",
             videoDetails: playlist
         };

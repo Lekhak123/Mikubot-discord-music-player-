@@ -24,7 +24,7 @@ const searchSingleYTlink = async(singlelinkURL : string) => {
             url: info.videoDetails.video_url
         };
         let SongplayerInfo = {
-            source:"youtube",
+            source:"yt",
             type: "single",
             videoDetails:videoDetails,
         };

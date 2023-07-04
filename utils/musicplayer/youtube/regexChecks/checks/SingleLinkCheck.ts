@@ -1,4 +1,4 @@
-const matchYoutubeSingleLink = (text : string) : boolean => {
+const matchYoutubeSingleLink = async(text : string) : Promise<boolean> => {
     let ytsingleLinkRegex = /https?:\/\/(www.)?youtub?e?.(com\/watch\?v=[A-Z0-9-_]+|be\/[A-Z0-9-_]+)/gmi;
     return ytsingleLinkRegex.test(text);
 };

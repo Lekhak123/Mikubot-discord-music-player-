@@ -5,8 +5,10 @@ import {resume} from "./musicplayer/commands/resume";
 import {pause} from "./musicplayer/commands/pause";
 import {loop} from "./musicplayer/commands/loop";
 import {playSingleYoutubeSong} from "./musicplayer/addSingle";
+import { fetchPlayerInfo } from "./musicplayer/fetchPlayerInfo";
 let queue = new Map();
 let playerstatus = new Map();
+
 
 const discordMusicPlayer = async(message : Message) => {
     let serverQueue = await queue.get(message.guild.id);
@@ -29,7 +31,14 @@ const discordMusicPlayer = async(message : Message) => {
     };
 
     if (message.content.startsWith('!playplaylist')) {
-        playPlaylist(queue, serverQueue, message, disconnected, isPlaying, isSkipping);
+        try {
+
+            let songResult = await fetchPlayerInfo(message.content.slice(14))
+            playPlaylist(queue, serverQueue, message, disconnected, isPlaying, isSkipping);
+        } catch (error) {
+            message.channel.send(`${error}`);
+            return;
+        }
     };
     if (message.content.startsWith('!playsingle')) {
         playSingleYoutubeSong(queue, serverQueue, message, disconnected, isPlaying, isSkipping);
