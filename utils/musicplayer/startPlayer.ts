@@ -7,7 +7,7 @@ export {startPlayer};
 
 const startPlayer = async(queue : any, serverQueue : any, message : Message, disconnected : boolean, isPlaying : boolean, isSkipping : boolean, songResult : any) => {
 
-    const playlistVoiceChannelId = process.env.playlistplayerchannel; // Replace with your desired voice channel ID
+    // const playlistVoiceChannelId = process.env.playlistplayerchannel; // Replace with your desired voice channel ID
 
     const voiceChannel = message.member.voice.channel;
 
@@ -17,10 +17,10 @@ const startPlayer = async(queue : any, serverQueue : any, message : Message, dis
             .send('You need to be in a voice channel to use this command.');
     };
 
-    if (voiceChannel.id !== playlistVoiceChannelId) {
+    if (serverQueue && !(serverQueue.channel===voiceChannel.id)) {
         return message
             .channel
-            .send('You are not allowed to use this command in this voice channel.');
+            .send('Already in a voice channel.');
     };
 
     // Create server queue if it doesn't exist
@@ -36,6 +36,7 @@ const startPlayer = async(queue : any, serverQueue : any, message : Message, dis
             volume: 5,
             playing: true,
             loop: false,
+            channel:voiceChannel.id,
             audioPlayer: createAudioPlayer({
                 behaviors: {
                     noSubscriber: NoSubscriberBehavior.Stop
