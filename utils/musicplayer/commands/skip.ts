@@ -5,7 +5,7 @@ const skip = async(message : Message, serverQueue : any, isPlaying : boolean, is
     if (!message.member.voice.channel) {
         return message
             .channel
-            .send('You need to be in a voice channel to skip the music.');
+            .send('You need to be in a voice channel to use this command.');
     };
     if (!serverQueue) {
         return message
@@ -17,11 +17,11 @@ const skip = async(message : Message, serverQueue : any, isPlaying : boolean, is
             .channel
             .send('Skip is under cooldown. Try again in a few seconds.');
     };
-    if(serverQueue.songs.length===1){
-        return message
-        .channel
-        .send('Cannot skip this song.');
-    }
+    // if(serverQueue.songs.length===1){
+    //     return message
+    //     .channel
+    //     .send('Cannot skip this song.');
+    // }
     if (serverQueue.loop) {
         serverQueue
             .songs

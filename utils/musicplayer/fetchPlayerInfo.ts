@@ -41,6 +41,7 @@ const fetchPlayerInfo = async(text : string) => {
             return youtubeSongSearchResult;
         };
     } catch (error) {
+        console.log(error)
         throw new Error("Cannot find song with this input.");
     };
 

@@ -5,7 +5,7 @@ const loop = async(message : Message, serverQueue : any) => {
     if (!message.member.voice.channel) {
         return message
             .channel
-            .send('You need to be in a voice channel to enable or disable loop.');
+            .send('You need to be in a voice channel to use this command.');
     };
     if (!serverQueue) {
         return message

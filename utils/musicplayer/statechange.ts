@@ -1,11 +1,15 @@
 import {AudioPlayerStatus} from '@discordjs/voice';
+import { getserverQueue } from '@utils/playmusic';
 
 export {onStateChange};
-
-async function onStateChange(playmusic : any, isPlaying : boolean, isSkipping : boolean, queue : any, disconnected : boolean, oldState : any, newState : any, serverQueue : any, guild : any,audioPlayer:any) {
+async function onStateChange(playmusic : any, isPlaying : boolean, isSkipping : boolean, queue : any, disconnected : boolean, oldState : any, newState : any,  guild : any,audioPlayer:any) {
     audioPlayer.off('stateChange', onStateChange);
     audioPlayer.off(AudioPlayerStatus.Idle, onStateChange);
-
+    let serverQueue= await getserverQueue(guild.id);
+   
+    if(!serverQueue){
+        return;
+    }
     if (disconnected) {
         return;
     };
@@ -28,7 +32,7 @@ async function onStateChange(playmusic : any, isPlaying : boolean, isSkipping : 
         };
 
         if (serverQueue &&serverQueue.songs.length > 0) {
-            playmusic(guild, serverQueue.songs[0], queue, disconnected, isPlaying, isSkipping);
+            playmusic(guild, serverQueue.songs[0], queue, disconnected, isPlaying, isSkipping,serverQueue);
             if(serverQueue.length===1){
                 serverQueue=null;
             }

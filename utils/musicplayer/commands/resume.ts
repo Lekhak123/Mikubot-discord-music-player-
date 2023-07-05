@@ -5,7 +5,7 @@ const resume = async(message : Message, serverQueue : any) => {
     if (!message.member.voice.channel) {
         return message
             .channel
-            .send('You need to be in a voice channel to play music.');
+            .send('You need to be in a voice channel to use this command.');
     }
     if (!serverQueue) {
         return message
@@ -20,7 +20,7 @@ const resume = async(message : Message, serverQueue : any) => {
         return message
             .channel
             .send('Resumed the music.');
-    }
+    };
     return message
         .channel
         .send('The music is already playing.');

@@ -29,6 +29,9 @@ const startPlayer = async(queue : any, serverQueue : any, message : Message, dis
             textChannel: message.channel,
             voiceChannel,
             connection: null,
+            readyListener: null,
+            idleListeners: [],
+            disconnectedListeners: [],
             songs: [],
             volume: 5,
             playing: true,
@@ -39,7 +42,6 @@ const startPlayer = async(queue : any, serverQueue : any, message : Message, dis
                 }
             })
         };
-
 
         if (songResult.type === "single") {
             // Add playlist songs to the queue
@@ -63,34 +65,32 @@ const startPlayer = async(queue : any, serverQueue : any, message : Message, dis
 
             queueConstructor.connection = connection;
             await connection.subscribe(queueConstructor.audioPlayer);
-
+            let createDisconnectedListener = (queueConstructor : any, message : Message, queue : any) => {
+                return () => {
+                    disconnected = true;
+                    isPlaying=false;
+                    queueConstructor
+                    .audioPlayer
+                    .off(AudioPlayerStatus.Idle, onStateChange); // Remove the onStateChange listener
+                        connection.off(VoiceConnectionStatus.Ready, readyListener); // Remove the readyListener
+                        queueConstructor
+                        .connection
+                        .destroy();
+                    queue.delete(message.guild.id);
+                    return message
+                        .channel
+                        .send(`Bot has left the voice channel in guild ${message.guild.name}`);
+                };
+            };
             const readyListener = (queueConstructor : any, message : Message, queue : any) => {
                 // console.log('The connection has entered the Ready state - ready to play
                 // audio!');
-                playmusic(message.guild, queueConstructor.songs[0], queue, disconnected, isPlaying, isSkipping);
+                playmusic(message.guild, queueConstructor.songs[0], queue, disconnected, isPlaying, isSkipping, queueConstructor);
                 disconnected = false;
                 connection.on(VoiceConnectionStatus.Disconnected, createDisconnectedListener(queueConstructor, message, queue));
-
             };
 
-            const createDisconnectedListener = (queueConstructor : any, message : Message, queue : any) => {
-                return () => {
-                    disconnected = true;
-                    serverQueue = null;
-                    queue.delete(message.guild.id);
-                    queueConstructor
-                        .connection
-                        .destroy();
-                    queueConstructor
-                        .audioPlayer
-                        .off(AudioPlayerStatus.Idle, onStateChange); // Remove the onStateChange listener
-
-                    connection.off(VoiceConnectionStatus.Ready, readyListener); // Remove the readyListener
-                    return message
-                        .channel
-                        .send(`Bot has left the voice channel in guild <#${message.guild.name}>`);
-                };
-            };
+            queueConstructor.readyListener = readyListener;
 
             connection.on(VoiceConnectionStatus.Ready, () => readyListener(queueConstructor, message, queue));
 
@@ -118,7 +118,7 @@ const startPlayer = async(queue : any, serverQueue : any, message : Message, dis
                     .push(song);
             };
         };
-
+        queue.set(message.guild.id, serverQueue);
         return message
             .channel
             .send('Playlist added to the queue.');

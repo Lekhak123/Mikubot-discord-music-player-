@@ -4,8 +4,8 @@ import {createAudioResource, AudioPlayerStatus} from '@discordjs/voice';
 
 export {playmusic};
 
-async function playmusic(guild : any, song : any, queue : any, disconnected : boolean, isPlaying : boolean, isSkipping : boolean) {
-    const serverQueue = queue.get(guild.id);
+async function playmusic(guild : any, song : any, queue : any, disconnected : boolean, isPlaying : boolean, isSkipping : boolean,serverQueue:any) {
+    // const serverQueue = queue.get(guild.id);
     // const connection = getVoiceConnection(guild.id);
     if (!song) {
         queue.delete(guild.id);
@@ -13,11 +13,11 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
     };
 
     if (!serverQueue) {
+        console.log("no server queue")
         return;
     };
 
     if (song.source === "yt") {
-        console.log(song)
         const stream = await playdl.stream(song.url, {discordPlayerCompatibility: true});
         const resource = createAudioResource(stream.stream, {inputType: stream.type});
         await serverQueue
@@ -33,16 +33,23 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
             .play(resource);
     };
 
-    const stateChangeHandler = (oldState : any, newState : any, audioPlayer : any) => {
-        onStateChange(playmusic, isPlaying, isSkipping, queue, disconnected, oldState, newState, serverQueue, guild, audioPlayer);
-    };
-    serverQueue
-        .audioPlayer
-        .on(AudioPlayerStatus.Idle, (oldState : any, newState : any) => stateChangeHandler(oldState, newState, serverQueue.audioPlayer));
+    
+    if(serverQueue
+        .idleListeners.length===0){
+            let stateChangeHandler = (oldState : any, newState : any, audioPlayer : any) => {
+                onStateChange(playmusic, isPlaying, isSkipping, queue, disconnected, oldState, newState, guild, audioPlayer);
+            };
+            serverQueue
+                .idleListeners.push(stateChangeHandler);
+            serverQueue
+                .audioPlayer
+                .on(AudioPlayerStatus.Idle, (oldState : any, newState : any) => stateChangeHandler(oldState, newState, serverQueue.audioPlayer));
 
-    serverQueue
-        .audioPlayer
-        .on('error', (error : any) => console.error('Error playing song:', error));
+                serverQueue
+                    .audioPlayer
+                    .on('error', (error : any) => console.error('Error playing song:', error));
+        };
+
 
     serverQueue
         .textChannel

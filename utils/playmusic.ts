@@ -6,9 +6,21 @@ import {pause} from "./musicplayer/commands/pause";
 import {loop} from "./musicplayer/commands/loop";
 
 import { fetchPlayerInfo } from "./musicplayer/fetchPlayerInfo";
+import { stop } from "./musicplayer/commands/stop";
 let queue = new Map();
 let playerstatus = new Map();
 
+
+
+const deleteQueue = (serverid:any)=>{
+    queue.delete(serverid);
+    playerstatus.delete(serverid);
+};
+
+const getserverQueue =  async(serverid:any)=>{
+    let serverQueue = await queue.get(serverid);
+    return serverQueue
+};
 
 const discordMusicPlayer = async(message : Message) => {
     let serverQueue = await queue.get(message.guild.id);
@@ -33,7 +45,7 @@ const discordMusicPlayer = async(message : Message) => {
     if (message.content.startsWith('!play')) {
         try {
 
-            let songResult = await fetchPlayerInfo(message.content.slice(14))
+            let songResult = await fetchPlayerInfo(message.content.slice(6))
             startPlayer(queue, serverQueue, message, disconnected, isPlaying, isSkipping,songResult);
         } catch (error) {
             message.channel.send(`${error}`);
@@ -56,7 +68,10 @@ const discordMusicPlayer = async(message : Message) => {
     if (message.content.startsWith('!loop')) {
         loop(message, serverQueue);
     };
+    if(message.content.startsWith("!stop")){
+        stop(message, serverQueue, isPlaying, isSkipping,disconnected,queue,deleteQueue);
+    };
     return;
 };
 
-export {discordMusicPlayer};
+export {discordMusicPlayer,getserverQueue};
