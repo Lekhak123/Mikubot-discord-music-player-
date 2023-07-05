@@ -14,7 +14,7 @@ const startPlayer = async(queue : any, serverQueue : any, message : Message, dis
     if (!voiceChannel) {
         return message
             .channel
-            .send('You need to be in a voice channel to play a playlist.');
+            .send('You need to be in a voice channel to use this command.');
     };
 
     if (voiceChannel.id !== playlistVoiceChannelId) {
@@ -106,21 +106,27 @@ const startPlayer = async(queue : any, serverQueue : any, message : Message, dis
 
         if (songResult.type === "single") {
             // Add playlist songs to the queue
-            serverQueue
-                .songs
-                .push(songResult.videoDetails);
+            if(!(songResult.videoDetails in serverQueue.songs)){
+                serverQueue
+                    .songs
+                    .push(songResult.videoDetails);
+            };
         };
         if (songResult.type === "multiple") {
             // Add playlist songs to the queue
             for (const song of songResult.videoDetails) {
-                serverQueue
-                    .songs
-                    .push(song);
+                if(!(song in serverQueue.songs)){
+                    serverQueue
+                        .songs
+                        .push(song);
+                };
             };
         };
         queue.set(message.guild.id, serverQueue);
+        let musictype:string;
+        songResult.type==="multiple"?musictype="Songs":musictype="Song";
         return message
             .channel
-            .send('Playlist added to the queue.');
+            .send(`${musictype} added to the queue.`);
     };
 };

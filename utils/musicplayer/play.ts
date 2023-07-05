@@ -13,7 +13,6 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
     };
 
     if (!serverQueue) {
-        console.log("no server queue")
         return;
     };
 
