@@ -22,7 +22,8 @@ const searchSingleYTlink = async(singlelinkURL : string) => {
         const videoDetails = {
             source:"yt",
             title: info.videoDetails.title,
-            url: info.videoDetails.video_url
+            url: info.videoDetails.video_url,
+            thumbnail: info?.videoDetails?.thumbnails[((info?.videoDetails?.thumbnails?.length||1)-1)||0]?.url||"https://images.pexels.com/photos/3648850/pexels-photo-3648850.jpeg",
         };
         let SongplayerInfo = {
             source:"yt",

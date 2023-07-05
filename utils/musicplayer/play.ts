@@ -25,6 +25,7 @@ async function playmusic(guild : any, song : any, queue : any, disconnected : bo
     };
     if (song.source === "spotify") {
         let searched = await playdl.search(`${song.title}`, {limit: 1}) // This will search the found track on youtube.
+        serverQueue.songs[0]["thumbnail"]=searched[0]?.thumbnails[((searched[0]?.thumbnails?.length||1)-1)||0]?.url||"https://images.pexels.com/photos/3648850/pexels-photo-3648850.jpeg";
         const stream = await playdl.stream(searched[0].url, {discordPlayerCompatibility: true});
         const resource = createAudioResource(stream.stream, {inputType: stream.type});
         await serverQueue

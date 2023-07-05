@@ -7,9 +7,9 @@ import {loop} from "./musicplayer/commands/loop";
 
 import { fetchPlayerInfo } from "./musicplayer/fetchPlayerInfo";
 import { stop } from "./musicplayer/commands/stop";
+import { discordSongQueue } from "./musicplayer/commands/queue";
 let queue = new Map();
 let playerstatus = new Map();
-
 
 
 const deleteQueue = (serverid:any)=>{
@@ -70,6 +70,9 @@ const discordMusicPlayer = async(message : Message) => {
     };
     if(message.content.startsWith("!stop")){
         stop(message, serverQueue, isPlaying, isSkipping,disconnected,queue,deleteQueue);
+    };
+    if(message.content.startsWith("!queue")){
+        discordSongQueue(message, serverQueue);
     };
     return;
 };

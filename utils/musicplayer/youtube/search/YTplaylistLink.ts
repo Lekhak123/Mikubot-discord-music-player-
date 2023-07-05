@@ -11,7 +11,8 @@ const searchYTPlaylist = async(playlistUrl : string) => {
             playlistdata.push({
                 url: x.url,
                 title:x.title,
-                source: "yt"
+                source: "yt",
+                thumbnail: x?.bestThumbnail?.url||"https://images.pexels.com/photos/3648850/pexels-photo-3648850.jpeg",
             });
         })
         let SongplayerInfo = {

@@ -11,7 +11,11 @@ const searchYTsong = async(songSearchArg : string) => {
             source:"yt",
             title: yt_info[0].title,
             url: yt_info[0].url,
+            thumbnail: yt_info[0]?.thumbnails[((yt_info[0]?.thumbnails?.length||1)-1)||0]?.url||"https://images.pexels.com/photos/3648850/pexels-photo-3648850.jpeg",
         };
+        
+
+        
         let SongplayerInfo = {
             source:"yt",
             type: "single",
