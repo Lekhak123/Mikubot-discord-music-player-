@@ -4,6 +4,8 @@ import {skip} from "./musicplayer/commands/skip";
 import {resume} from "./musicplayer/commands/resume";
 import {pause} from "./musicplayer/commands/pause";
 import {loop} from "./musicplayer/commands/loop";
+import { shuffle } from "./musicplayer/commands/shuffle";
+
 
 import { fetchPlayerInfo } from "./musicplayer/fetchPlayerInfo";
 import { stop } from "./musicplayer/commands/stop";
@@ -45,7 +47,7 @@ const discordMusicPlayer = async(message : Message) => {
     if (message.content.startsWith('!play')) {
         try {
 
-            let songResult = await fetchPlayerInfo(message.content.slice(6))
+            let songResult = await fetchPlayerInfo(message.content.slice(6));
             startPlayer(queue, serverQueue, message, disconnected, isPlaying, isSkipping,songResult);
         } catch (error) {
             message.channel.send(`${error}`);
@@ -73,6 +75,9 @@ const discordMusicPlayer = async(message : Message) => {
     };
     if(message.content.startsWith("!queue")){
         discordSongQueue(message, serverQueue);
+    };
+    if(message.content.startsWith("!shuffle")){
+        shuffle(message, serverQueue);
     };
     return;
 };

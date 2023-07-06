@@ -8,9 +8,9 @@ const searchSpotifyTrack = async(spotifyTrackURL : string) => {
         };
         let sp_data = await playdl.spotify(spotifyTrackURL) // This will get spotify data from the url [ I used track url, make sure to make a logic for playlist, album ]
         const videoDetails = {
-            source:"yt",
+            source:"spotify",
             title:sp_data.name,
-            url:sp_data.name.url,
+            url:sp_data.url,
         };
         let SongplayerInfo = {
             source: "spotify",
